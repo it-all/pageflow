@@ -1,0 +1,5 @@
+.env
+storage/
+vendor/
+.vscode/
+public/
