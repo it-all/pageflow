@@ -1,7 +1,7 @@
 # phpInit  
 Initialize a PHP page controller app with autoload, important PHP settings, and a custom error handler.  
 
-## Usage  
+## Installation & Usage  
 Clone this repo.  
 Install the Composer dependencies:  
 ```
@@ -14,7 +14,7 @@ require __DIR__ . '/../src/init.php';
 ```
 Your class files can be autoloaded anywhere under the src directory. It's recommended to create a Domain directory for your include files.  
 
-To Upgrade:
+To upgrade:
 ```
 git pull
 ```
