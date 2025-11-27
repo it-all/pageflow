@@ -16,7 +16,8 @@ Your class files can be autoloaded anywhere under the src directory. It's recomm
 
 To upgrade:
 ```
-git pull
+git fetch
+git merge
 ```
 
 ## Why Page Controller?  
