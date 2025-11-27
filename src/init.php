@@ -77,12 +77,11 @@ $fatalErrorHtml = $_ENV['FATAL_ERROR_HTML'] ?? FATAL_ERROR_HTML_DEFAULT;
 /** error handling */
 
 /** 
- * even though the error handler logs errors, this ensures errors in the error handler itself or in this file after this point through error handler instantiantion will be logged.
- * any errors prior to this point will not be logged, unless configured in php.ini
  * ignore_repeated_errors only stops the same error from being logged in case it happens more than once in a row, on the same page load
  * see https://github.com/php/php-src/issues/19509
  */
 ini_set('ignore_repeated_errors', 'On');
+
 ini_set('error_log', $_ENV['PHP_ERROR_LOG_PATH']);
 
 if (isset($_ENV['TIME_ZONE']) && mb_strlen($_ENV['TIME_ZONE']) > 0) {
