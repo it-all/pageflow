@@ -6,6 +6,7 @@ Install the Composer dependencies:
 ```
 php composer.phar update
 ```
+Copy .env.example to .env, and edit the settings.  
 Create public directory on the same level as src. Create index.php, or any php file, and add this line at the top:  
 ```
 require __DIR__ . '/../src/init.php';
