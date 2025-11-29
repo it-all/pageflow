@@ -1,5 +1,5 @@
 # phpInit  
-Initialize a PHP page controller app with autoload, important PHP settings, and a custom error handler.  
+Initialize a PHP page controller app with autoload, important PHP settings, a custom error handler, and PHPMailer access.  
 
 ## Installation & Usage  
 Clone this repo  
@@ -35,3 +35,6 @@ Handles as many PHP errors and uncaught exceptions as possible. Provides a stack
 3. Email  
 - Emails errors to webmaster configured in .env.  
 - Only emails if less than 10 emails have been sent in the past hour (otherwise emails on every page load can cause server slowdown).  
+
+## PHPMailer  
+Set appropriate .env vars to instantiate. Then access with $emailer->getPhpMailer() or just email using $emailer->send().  
