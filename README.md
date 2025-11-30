@@ -1,6 +1,9 @@
 # phpInit  
 Initialize a PHP page controller app with autoload, important PHP settings, a custom error handler, optional PHPMailer access, optional PostGreSQL database connection (PHP pgsql extension required).  
 
+## Requirements  
+PHP 7.1+
+
 ## Installation & Usage  
 Clone this repo.  
 Install the Composer dependencies:  
