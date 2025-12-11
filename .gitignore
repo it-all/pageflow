@@ -1,5 +1,5 @@
 .env
-storage/
 vendor/
 .vscode/
+storage/
 public/

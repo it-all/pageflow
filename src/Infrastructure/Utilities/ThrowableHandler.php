@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
-namespace Infrastructure\Utilities;
+namespace Pageflow\Infrastructure\Utilities;
 
 use DateTimeImmutable;
-use Infrastructure\Utilities\PHPMailerService;
+use Pageflow\Infrastructure\Utilities\PHPMailerService;
 
 class ThrowableHandler
 {

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace Infrastructure\Database;
+namespace Pageflow\Infrastructure\Database;
 
-use Infrastructure\Database\Queries\QueryBuilder;
+use Pageflow\Infrastructure\Database\Queries\QueryBuilder;
 
 /**
  * Class Postgres

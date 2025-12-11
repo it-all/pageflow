@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace Infrastructure\Utilities;
+namespace Pageflow\Infrastructure\Utilities;
 
 /**
  *  A place to store php helper functions, not app-related functions

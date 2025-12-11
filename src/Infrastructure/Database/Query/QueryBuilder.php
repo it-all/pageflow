@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Infrastructure\Database\Queries;
+namespace Pageflow\Infrastructure\Database\Queries;
 
 use Exception;
 use Infrastructure\Database\Postgres;
