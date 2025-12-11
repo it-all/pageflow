@@ -1,26 +1,23 @@
-# phpInit  
-Initialize a PHP page controller app with autoload, important PHP settings, a custom error handler, optional PHPMailer access, optional PostGreSQL database connection (PHP pgsql extension required).  
+# pageflow  
+Pageflow initializes a PHP page controller app with important PHP settings, a custom error handler, optional PHPMailer access, optional PostGreSQL database connection (PHP pgsql extension required).  
 
 ## Requirements  
 PHP 7.1+
 
 ## Installation & Usage  
-Clone this repo.  
-Install the Composer dependencies:  
 ```
-php composer.phar update
+$ composer require pageflow/pageflow
 ```
 Copy .env.example to .env, and edit the settings.  
-Create public directory on the same level as src. Create index.php, or any php file, and add this line at the top:  
-```
-require __DIR__ . '/../src/init.php';
-```
-Your class files can be autoloaded anywhere under the src directory. It's recommended to create a Domain directory under src for your include files.  
 
-To upgrade:
+Add the following code to the top of your php file(s):  
 ```
-git fetch
-git merge
+use Pageflow\Pageflow;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$pageflow = Pageflow::getInstance();
+$pageflow->start();
 ```
 
 ## Why Page Controller?  
