@@ -1,5 +1,5 @@
 {
-    "name": "pageflow/pageflow",
+    "name": "it-all/pageflow",
     "type": "library",
     "description": "Pageflow initializes a PHP page controller app with important PHP settings, a custom error handler, optional PHPMailer access, optional PostGreSQL database connection (PHP pgsql extension required).",
     "keywords": [
@@ -21,10 +21,11 @@
         "php": ">=7.1",
         "vlucas/phpdotenv": "^5.6",
         "phpmailer/phpmailer": "^7.0.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "Pageflow\\": "Pageflow"
-        }
     }
 }
+// ,
+// "autoload": {
+//     "psr-4": {
+//         "it-all\\": "Pageflow"
+//     }
+// }

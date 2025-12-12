@@ -13,9 +13,8 @@ use Pageflow\Infrastructure\Utilities\ThrowableHandler;
  * a Singleton.
  * The start method can be called at the top of every web page or cli script.
  */
-class Pageflow
+class Init
 {
-    // const AUTOLOAD_CLASSES_DIR = 'src';
     const DOTENV_BOOLS = ['IS_LIVE', 'IS_EMAIL_ERRORS', 'IS_ECHO_ERRORS_DEV'];
     const DOTENV_BOOL_TRUE_VALUES = [1, "true", "yes", "on"];
     const ALLOWED_PHPMAILER_PROTOCOL_VALUES = ["smtp", "sendmail", "mail", "qmail"];
@@ -41,7 +40,7 @@ class Pageflow
     {
         static $instance = null;
         if ($instance === null) {
-            $instance = new Pageflow();
+            $instance = new Init();
         }
         return $instance;
     }
