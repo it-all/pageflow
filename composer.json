@@ -24,7 +24,7 @@
     },
     "autoload": {
         "psr-4": {
-            "it-all\\": "Pageflow"
+            "Pageflow\\": "src/"
         }
     }
 }

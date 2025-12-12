@@ -1,14 +1,14 @@
-# pageflow  
+# Pageflow  
 Pageflow initializes a PHP page controller app with important PHP settings, a custom error handler, optional PHPMailer access, optional PostGreSQL database connection (PHP pgsql extension required).  
 
 ## Requirements  
-PHP 7.1+
+PHP 7.1+  
 
 ## Installation & Usage  
 ```
-$ composer require pageflow/pageflow
+$ composer require it-all/pageflow
 ```
-Copy .env.example to .env, and edit the settings.  
+Copy .env.example to .env in your top level directory, and edit the settings.  
 
 Add the following code to the top of your php file(s):  
 ```
@@ -17,7 +17,7 @@ use Pageflow\Pageflow;
 require __DIR__ . '/../vendor/autoload.php';
 
 $pageflow = Pageflow::getInstance();
-$pageflow->start();
+$pageflow->init();
 ```
 
 ## Why Page Controller?  

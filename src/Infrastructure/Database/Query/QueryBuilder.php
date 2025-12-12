@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Pageflow\Infrastructure\Database\Queries;
+namespace Pageflow\Infrastructure\Database\Query;
 
 use Exception;
-use Infrastructure\Database\Postgres;
-use Infrastructure\Exceptions\QueryFailureException;
-use Infrastructure\Exceptions\QueryResultsNotFoundException;
+use Pageflow\Infrastructure\Database\Postgres;
+use Pageflow\Infrastructure\Exceptions\QueryFailureException;
+use Pageflow\Infrastructure\Exceptions\QueryResultsNotFoundException;
 
 class QueryBuilder
 {

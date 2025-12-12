@@ -13,7 +13,7 @@ use Pageflow\Infrastructure\Utilities\ThrowableHandler;
  * a Singleton.
  * The start method can be called at the top of every web page or cli script.
  */
-class Init
+class Pageflow
 {
     const DOTENV_BOOLS = ['IS_LIVE', 'IS_EMAIL_ERRORS', 'IS_ECHO_ERRORS_DEV'];
     const DOTENV_BOOL_TRUE_VALUES = [1, "true", "yes", "on"];
@@ -40,12 +40,12 @@ class Init
     {
         static $instance = null;
         if ($instance === null) {
-            $instance = new Init();
+            $instance = new Pageflow();
         }
         return $instance;
     }
 
-    public function start()
+    public function init()
     {
         /** all, including future types */
         error_reporting(-1); 

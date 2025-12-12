@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Pageflow\Infrastructure\Database\Queries;
+namespace Pageflow\Infrastructure\Database\Query;
 
 abstract class InsertUpdateBuilder extends QueryBuilder
 {

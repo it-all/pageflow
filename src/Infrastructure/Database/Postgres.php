@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Pageflow\Infrastructure\Database;
 
-use Pageflow\Infrastructure\Database\Queries\QueryBuilder;
+use Pageflow\Infrastructure\Database\Query\QueryBuilder;
 
 /**
  * Class Postgres
