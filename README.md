@@ -1,5 +1,5 @@
 # Pageflow  
-Pageflow initializes a PHP page controller app with important PHP settings, a custom error handler, optional PHPMailer access, optional PostGreSQL database connection (PHP pgsql extension required).  
+Pageflow initializes a PHP page controller app with important PHP settings, a custom error handler, optional PHPMailer access, optional PostgreSQL database connection (PHP pgsql extension required).  
 
 ## Why Page Controller?  
 Small and medium sized web apps may not need the overhead of front controlled [frameworks](https://toys.lerdorf.com/the-no-framework-php-mvc-framework). Request routing in front controllers adds a layer of abstraction and complexity that can be eliminated by a simple page controller model, with only 1 required file at the top of each page to provide configuration and access to commonly used features.  
