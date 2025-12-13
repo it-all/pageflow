@@ -38,6 +38,7 @@ class Pageflow
     const EMAIL_FAIL_MESSAGE_START = 'Email Send Failure';
 
     private $rootDir;
+    private $dotEnv;
     private $emailer;
     private $postgres;
     private $pgConn;
@@ -78,17 +79,7 @@ class Pageflow
         $dotenv->ifPresent('FATAL_ERROR_HTML')->notEmpty();
         $dotenv->ifPresent('POSTGRES_CONNECTION_STRING')->notEmpty();
 
-        /** overwrites .env bools with a PHP boolean value */
-        (function($dotenvBools) {
-            foreach ($dotenvBools as $bool) {
-                if (isset($_ENV[$bool])) {
-                    $dotEnvVal = $_ENV[$bool];
-                    $boolValue = in_array(strtolower($dotEnvVal), self::DOTENV_BOOL_TRUE_VALUES);
-                    $_ENV[$bool] = $boolValue;
-                    $_SERVER[$bool] = $boolValue;
-                }
-            }
-        })(self::DOTENV_BOOLS);
+        $this->convertDotEnvBoolValues(self::DOTENV_BOOLS);
 
         if ($_ENV['IS_EMAIL_ERRORS']) {
             $dotenv->required('ERROR_EMAIL_LOG_PATH')->notEmpty();
@@ -182,11 +173,34 @@ class Pageflow
             $this->postgres = PostgresService::getInstance($_ENV['POSTGRES_CONNECTION_STRING']);
             $this->pgConn = $this->postgres->getConnection();
         }
+
+        $this->dotEnv = $dotenv;
+        $this->emailer = $emailer;
+    }
+
+    /**
+     * overwrites specified .env bools with a PHP boolean value
+     */
+    public function convertDotEnvBoolValues(array $dotEnvBoolVarnames)
+    {
+        foreach ($dotEnvBoolVarnames as $dotEnvBoolVarname) {
+            if (isset($_ENV[$dotEnvBoolVarname])) {
+                $dotEnvVal = $_ENV[$dotEnvBoolVarname];
+                $boolValue = in_array(strtolower($dotEnvVal), self::DOTENV_BOOL_TRUE_VALUES);
+                $_ENV[$dotEnvBoolVarname] = $boolValue;
+                $_SERVER[$dotEnvBoolVarname] = $boolValue;
+            }
+        }
     }
 
     public function getRootDir(): ?string
     {
         return $this->rootDir;
+    }
+
+    public function getDotEnv(): ?Dotenv
+    {
+        return $this->dotEnv;
     }
 
     public function getEmailer(): ?PHPMailerService
@@ -204,4 +218,3 @@ class Pageflow
         return $this->pgConn;
     }
 }
-
