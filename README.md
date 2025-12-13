@@ -54,7 +54,7 @@ then:
 $emailer->send('Subject', 'Body', ['self@example.com']);
 ```
 
-## PostGreSQL Database  
+## PostgreSQL Database  
 Set the connection string var in .env to instantiate a helpful service layer object, which includes a Query Builder. Use that to run queries, or the connection resource to query using native PHP pg functions.  
 ```
 $postgres = $pageflow->getPostgres();
