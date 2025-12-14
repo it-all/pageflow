@@ -41,7 +41,7 @@ Handles as many PHP errors and uncaught exceptions as possible. Provides a stack
 
 3. Email  
 - Emails errors to webmaster configured in .env.  
-- Only emails if less than 10 emails have been sent in the past hour (otherwise emails on every page load can cause server slowdown).  
+- Throttles email rate to 10 per hour max (otherwise emails on every page load can cause server slowdown).  
 
 
 ## PHPMailer  

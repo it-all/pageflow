@@ -66,13 +66,9 @@ final class PostgresService
      * @param string $schema
      * @return array of table names
      */
-    public static function getSchemaTables(string $schema = 'public', array $skipTables = []): array
+    public static function getSchemaTables(string $schema = 'public'): array
     {
         $query = "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = $1";
-        foreach ($skipTables as $skip) {
-            $query .= " AND table_name";
-            $query .= (substr($skip, mb_strlen($skip) - 1) === '%') ? " NOT LIKE '$skip'" : " != '$skip'";
-        }
         $query .= " ORDER BY table_name";
         $q = new QueryBuilder($query, $schema);
 

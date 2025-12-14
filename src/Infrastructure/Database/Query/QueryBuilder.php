@@ -5,7 +5,6 @@ namespace Pageflow\Infrastructure\Database\Query;
 
 use Exception;
 use Pageflow\Infrastructure\Database\PostgresService;
-
 use Pageflow\Infrastructure\Exceptions\QueryFailureException;
 use Pageflow\Infrastructure\Exceptions\QueryResultsNotFoundException;
 
@@ -74,16 +73,15 @@ class QueryBuilder
     {
         foreach ($this->args as $argIndex => $arg) {
             if (is_bool($arg)) {
-                $this->args[$argIndex] = Postgres::convertBoolToPostgresBool($arg);
+                $this->args[$argIndex] = PostgresService::convertBoolToPostgresBool($arg);
             }
         }
     }
 
-    /**
-     * note, prior to php8, i was suppressing pg_query_params errors by using @, but this no longer works
-     */
     public function execute(bool $alterBooleanArgs = false)
     {
+        $postgresService = PostgresService::getInstance();
+        define('PG_CONN', $postgresService->getConnection());
         if ($alterBooleanArgs) {
             $this->alterBooleanArgs();
         }

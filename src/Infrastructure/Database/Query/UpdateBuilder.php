@@ -3,12 +3,13 @@ declare(strict_types=1);
 
 namespace Pageflow\Infrastructure\Database\Query;
 
-class UpdateBuilder extends InsertUpdateBuilder {
+class UpdateBuilder extends InsertUpdateBuilder
+{
     public $updateOnColumnName;
     public $updateOnColumnValue;
     public $setColumnsValues;
 
-    function __construct(string $dbTable, string $updateOnColumnName, $updateOnColumnValue)
+    public function __construct(string $dbTable, string $updateOnColumnName, $updateOnColumnValue)
     {
         $this->updateOnColumnName = $updateOnColumnName;
         $this->updateOnColumnValue = $updateOnColumnValue;

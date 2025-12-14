@@ -24,7 +24,7 @@ class MultiRowInserter
     private $args;
     private $countRows;
 
-    function __construct($baseSql, $valuesSql, $executeEvery=10) 
+    public function __construct($baseSql, $valuesSql, $executeEvery=10) 
     {
         $this->baseSql = $baseSql;
         $this->valuesSql = $valuesSql;
@@ -32,7 +32,7 @@ class MultiRowInserter
         $this->clear();
     }
 
-    function add($row) 
+    public function add($row) 
     {
         $this->args = array_merge($this->args, $row);
         $this->countRows++;
@@ -41,7 +41,7 @@ class MultiRowInserter
         }
     }
 
-    function getRowCount() 
+    public function getRowCount(): int
     { 
         return $this->countRows; 
     }
@@ -94,7 +94,7 @@ class MultiRowInserter
         return $allRowExprs;
     }
 
-    function execute() 
+    public function execute() 
     {
         if ($this->countRows == 0) {
             return;

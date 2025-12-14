@@ -70,26 +70,26 @@ class Pageflow
         /** parse .env */
         $dotenv = Dotenv::createImmutable($this->rootDir);
         $dotenv->load();
-        $dotenv->required('IS_LIVE')->isBoolean();
-        $dotenv->required(['PHP_ERROR_LOG_PATH'])->notEmpty();
-        $dotenv->required('IS_EMAIL_ERRORS')->isBoolean();
+        $dotenv->required(['IS_LIVE', 'IS_EMAIL_ERRORS'])->isBoolean();
+        $dotenv->required('PHP_ERROR_LOG_PATH')->notEmpty();
         $dotenv->ifPresent('IS_ECHO_ERRORS_DEV')->isBoolean();
         $dotenv->ifPresent('MAX_ERROR_LOG_CHARACTERS')->isInteger();
-        $dotenv->ifPresent('ERROR_PAGE')->notEmpty();
-        $dotenv->ifPresent('FATAL_ERROR_HTML')->notEmpty();
-        $dotenv->ifPresent('POSTGRES_CONNECTION_STRING')->notEmpty();
+        $dotenv->ifPresent(['ERROR_PAGE', 
+            'FATAL_ERROR_HTML', 
+            'POSTGRES_CONNECTION_STRING'
+        ])->notEmpty();
 
         $this->convertDotEnvBoolValues(self::DOTENV_BOOLS);
 
         if ($_ENV['IS_EMAIL_ERRORS']) {
-            $dotenv->required('ERROR_EMAIL_LOG_PATH')->notEmpty();
-            $dotenv->required('WEBMASTER_EMAIL')->notEmpty();
+            $dotenv->required(['ERROR_EMAIL_LOG_PATH', 'WEBMASTER_EMAIL'])->notEmpty();
             $dotenv->required(['PHPMAILER_PROTOCOL'])->allowedValues(self::ALLOWED_PHPMAILER_PROTOCOL_VALUES);
             if ($_ENV['PHPMAILER_PROTOCOL'] === 'smtp') {
-                $dotenv->required('PHPMAILER_SMTP_HOST')->notEmpty();
+                $dotenv->required(['PHPMAILER_SMTP_HOST', 
+                    'PHPMAILER_SMTP_USERNAME', 
+                    'PHPMAILER_SMTP_PASSWORD'
+                ])->notEmpty();
                 $dotenv->required('PHPMAILER_SMTP_PORT')->isInteger();
-                $dotenv->required('PHPMAILER_SMTP_USERNAME')->notEmpty();
-                $dotenv->required('PHPMAILER_SMTP_PASSWORD')->notEmpty();
                 $smtpHost = $_ENV['PHPMAILER_SMTP_HOST'];
                 $smtpPort = (int) $_ENV['PHPMAILER_SMTP_PORT'];
                 $smtpUsername = $_ENV['PHPMAILER_SMTP_USERNAME'];

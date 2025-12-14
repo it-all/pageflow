@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Pageflow\Infrastructure\Database\Query;
 
-// helpful when adding many where clauses to a select
+/**
+ * helpful when adding many where clauses to a select
+ */
 class SelectBuilder extends QueryBuilder
 {
     private $argCounter;
@@ -13,7 +15,7 @@ class SelectBuilder extends QueryBuilder
      * $whereExtraClause without WHERE or AND but with any ()
      * $whereExtraClause cannot use parameters
      */
-    function __construct(string $selectClause, string $fromClause, ?array $whereColumnsInfo = null, ?string $orderBy = null, ?int $limit = null, ?string $whereExtraClause = null)
+    public function __construct(string $selectClause, string $fromClause, ?array $whereColumnsInfo = null, ?string $orderBy = null, ?int $limit = null, ?string $whereExtraClause = null)
     {
         $this->whereStarted = false;
         parent::__construct("$selectClause $fromClause");
