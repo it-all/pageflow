@@ -58,9 +58,17 @@ $emailer->send('Subject', 'Body', ['self@example.com']);
 
 ## PHP-Auth
 Follow the [database table creation instructions](https://github.com/delight-im/PHP-Auth) to enable. Requires PDO.  
+To access use:
+```
+$auth = $pageflow->getAuth();
+```
 
 ## PDO
 Set the connection string var in .env to connect to a database using PDO. Note that this is required for Auth.  
+To access use:
+```
+$pdo = $pageflow->getPDO();
+```
 
 ## PostgreSQL Database  
 Set the connection string var in .env to instantiate a helpful service layer object, which includes a Query Builder. Use that to run queries, or the connection resource to query using native PHP pg functions.  
