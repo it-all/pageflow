@@ -15,28 +15,19 @@ class QueryBuilder
     protected $args = array();
     const OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'IS', 'IS NOT', 'LIKE', 'ILIKE'];
 
-    /**
-     * QueryBuilder constructor. like add, for convenience
-     */
-    function __construct($pgConn)
+    public function __construct($pgConn)
     {
         $this->pgConn = $pgConn;
-        $args = func_get_args();
-        // note func_num_args returns 0 if just 1 argument of null passed in
-        if (count($args) > 0) {
-            call_user_func_array(array($this, 'add'), $args);
-        }
     }
 
     /**
      * appends sql and args to query
      * @param string $sql
+     * @param array|null $args
      * @return $this
      */
-    public function add(string $sql)
+    public function add(string $sql, ?array $args)
     {
-        $args = func_get_args();
-        array_shift($args); // drop the first one (the sql string)
         $this->sql .= $sql;
         $this->args = array_merge($this->args, $args);
         return $this;
