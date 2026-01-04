@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Pageflow\Infrastructure\Database\Query;
+namespace Pageflow\Infrastructure\PostgreSQL\Query;
 
 /**
  * This receives ? as placeholders for variables in the $valuesSql arg and converts them to 

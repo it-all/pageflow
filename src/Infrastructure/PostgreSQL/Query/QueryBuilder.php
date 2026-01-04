@@ -1,15 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace Pageflow\Infrastructure\Database\Query;
+namespace Pageflow\Infrastructure\PostgreSQL\Query;
 
 use Exception;
-use Pageflow\Infrastructure\Database\PostgresService;
+use Pageflow\Infrastructure\PostgreSQL\PostgresService;
 use Pageflow\Infrastructure\Exceptions\QueryFailureException;
 use Pageflow\Infrastructure\Exceptions\QueryResultsNotFoundException;
 
 class QueryBuilder
 {
+    protected $pgConn;
     protected $sql;
     protected $args = array();
     const OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'IS', 'IS NOT', 'LIKE', 'ILIKE'];
@@ -17,8 +18,9 @@ class QueryBuilder
     /**
      * QueryBuilder constructor. like add, for convenience
      */
-    function __construct()
+    function __construct($pgConn)
     {
+        $this->pgConn = $pgConn;
         $args = func_get_args();
         // note func_num_args returns 0 if just 1 argument of null passed in
         if (count($args) > 0) {
@@ -73,23 +75,21 @@ class QueryBuilder
     {
         foreach ($this->args as $argIndex => $arg) {
             if (is_bool($arg)) {
-                $this->args[$argIndex] = PostgresService::convertBoolToPostgresBool($arg);
+                $this->args[$argIndex] = self::convertBoolToPostgresBool($arg);
             }
         }
     }
 
     public function execute(bool $alterBooleanArgs = false)
     {
-        $postgresService = PostgresService::getInstance();
-        define('PG_CONN', $postgresService->getConnection());
         if ($alterBooleanArgs) {
             $this->alterBooleanArgs();
         }
         
         /** query failures within transactions without suppressing errors for pg_query_params caused two errors, only 1 of which was inserted to the database log */
-        if (!$result = pg_query_params(PG_CONN, $this->sql, $this->args)) {
+        if (!$result = pg_query_params($this->pgConn, $this->sql, $this->args)) {
             /** note pg_last_error seems to often not return anything, but pg_query_params call will result in php warning */
-            $msg = pg_last_error(PG_CONN) . " " . $this->sql;
+            $msg = pg_last_error($this->pgConn) . " " . $this->sql;
             if (count($this->args) > 0) {
                 $msg .= PHP_EOL . " Args: " . var_export($this->args, true);
             }
@@ -219,5 +219,29 @@ class QueryBuilder
     {
         $this->sql = '';
         $this->args = [];
+    }
+
+    public static function convertPostgresBoolToBool(string $pgBool): bool
+    {
+        if ($pgBool !== PostgresService::BOOLEAN_TRUE && $pgBool !== PostgresService::BOOLEAN_FALSE) {
+            throw new \InvalidArgumentException("pgBool must be valid postgres boolean");
+        }
+
+        return $pgBool === PostgresService::BOOLEAN_TRUE;
+    }
+
+    public static function convertBoolToPostgresBool(bool $bool): string
+    {
+        return ($bool) ? PostgresService::BOOLEAN_TRUE : PostgresService::BOOLEAN_FALSE;
+    }
+
+    /** helpful to put null in nullable fields instead of blank string */
+    public static function convertEmptyToNull(?string $incoming): ?string
+    {
+        if (is_string($incoming) && mb_strlen(trim($incoming)) == 0) {
+            return null;
+        }
+
+        return $incoming;
     }
 }

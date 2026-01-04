@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Pageflow\Infrastructure\Database\Query;
+namespace Pageflow\Infrastructure\PostgreSQL\Query;
 
 class InsertBuilder extends InsertUpdateBuilder
 {

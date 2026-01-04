@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Pageflow\Infrastructure\Database;
+namespace Pageflow\Infrastructure\PostgreSQL;
 
-use Pageflow\Infrastructure\Database\Query\QueryBuilder;
+use Pageflow\Infrastructure\PostgreSQL\Query\QueryBuilder;
 
 /**
  * A class for connecting to a postgresql database and a few useful meta-query methods
  */
-final class PostgresService
+class PostgresService
 {
     /** @var array http://www.postgresql.org/docs/9.4/static/datatype-numeric.html */
     const NUMERIC_TYPES = array('smallint', 'integer', 'bigint', 'decimal', 'numeric', 'real', 'double precision', 'smallserial', 'serial', 'bigserial');
@@ -40,21 +40,12 @@ final class PostgresService
 
     private static $connection;
 
-    private function __construct(string $connectionString = '')
+    public function __construct(string $connectionString = '')
     {
         if (!self::$connection = pg_connect($connectionString)) {
             throw new \Exception('Postgres connection failure');
         }
         pg_set_error_verbosity(self::$connection, PGSQL_ERRORS_VERBOSE);
-    }
-
-    public static function getInstance(string $connectionString = '')
-    {
-        static $instance = null;
-        if ($instance === null) {
-            $instance = new PostgresService($connectionString);
-        }
-        return $instance;
     }
 
     public function getConnection() {
@@ -66,7 +57,7 @@ final class PostgresService
      * @param string $schema
      * @return array of table names
      */
-    public static function getSchemaTables(string $schema = 'public'): array
+    public function getSchemaTables(string $schema = 'public'): array
     {
         $query = "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = $1";
         $query .= " ORDER BY table_name";
@@ -99,7 +90,7 @@ final class PostgresService
     }
 
     /** note: NOT enough info given by pg_meta_data($tableName); */
-    public static function getTableMetaData(string $tableName)
+    public function getTableMetaData(string $tableName)
     {
         $q = new QueryBuilder("SELECT column_name, data_type, column_default, is_nullable, character_maximum_length, numeric_precision, udt_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = $1", $tableName);
 
@@ -109,29 +100,5 @@ final class PostgresService
         }
 
         return $rs;
-    }
-
-    public static function convertPostgresBoolToBool(string $pgBool): bool 
-    {
-        if ($pgBool !== self::BOOLEAN_TRUE && $pgBool !== self::BOOLEAN_FALSE) {
-            throw new \InvalidArgumentException("pgBool must be valid postgres boolean");
-        }
-
-        return $pgBool === self::BOOLEAN_TRUE;
-    }
-
-    public static function convertBoolToPostgresBool(bool $bool): string 
-    {
-        return ($bool) ? self::BOOLEAN_TRUE : self::BOOLEAN_FALSE;
-    }
-
-    /** helpful to put null in nullable fields instead of blank string */
-    public static function convertEmptyToNull(?string $incoming): ?string 
-    {
-        if (is_string($incoming) && mb_strlen(trim($incoming)) == 0) {
-            return null;
-        }
-
-        return $incoming;
     }
 }

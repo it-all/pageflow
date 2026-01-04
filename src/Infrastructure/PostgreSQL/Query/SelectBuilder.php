@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Pageflow\Infrastructure\Database\Query;
+namespace Pageflow\Infrastructure\PostgreSQL\Query;
 
 /**
  * helpful when adding many where clauses to a select

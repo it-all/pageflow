@@ -6,7 +6,7 @@ namespace Pageflow;
 use Delight\Auth\Auth;
 use Dotenv\Dotenv;
 use Exception;
-use Pageflow\Infrastructure\Database\PostgresService;
+use Pageflow\Infrastructure\PostgreSQL\PostgresService;
 
 use Pageflow\Infrastructure\Utilities\PHPMailerService;
 use Pageflow\Infrastructure\Utilities\ThrowableHandler;
@@ -225,7 +225,7 @@ class Pageflow
 
         /** connect to PostgreSQL */
         if (isset($_ENV['POSTGRES_CONNECTION_STRING'])) {
-            $this->postgres = PostgresService::getInstance($_ENV['POSTGRES_CONNECTION_STRING']);
+            $this->postgres = new PostgresService($_ENV['POSTGRES_CONNECTION_STRING']);
             $this->pgConn = $this->postgres->getConnection();
         }
 
