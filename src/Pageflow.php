@@ -13,7 +13,6 @@ use Pageflow\Infrastructure\Utilities\ThrowableHandler;
 use PDO;
 
 /** 
- * a Singleton.
  * The start method can be called at the top of every web page or cli script.
  */
 class Pageflow
@@ -50,16 +49,7 @@ class Pageflow
     private $pdo;
     private $auth;
 
-    public static function getInstance()
-    {
-        static $instance = null;
-        if ($instance === null) {
-            $instance = new Pageflow();
-        }
-        return $instance;
-    }
-
-    public function init(?string $rootDir = null)
+    public function __construct(?string $rootDir = null)
     {
         $this->rootDir = $rootDir ?? __DIR__ . '/../../../../';
 

@@ -1,5 +1,5 @@
 # Pageflow  
-Pageflow initializes a PHP page controller app with important PHP settings, a custom error handler, optional PHPMailer access, optional PostgreSQL database connection (PHP pgsql extension required).  
+Pageflow initializes a PHP page controller app with important PHP settings, a custom error handler, optional authentication and autorhization using PHP-Auth, optional emailing using PHPMailer, optional PDO (PDO extensions required), optional PostgreSQL database connection (PHP pgsql extension required).  
 
 ## Why Page Controller?  
 Small and medium sized web apps may not need the overhead of front controlled [frameworks](https://toys.lerdorf.com/the-no-framework-php-mvc-framework). Request routing in front controllers adds a layer of abstraction and complexity that can be eliminated by a simple page controller model, with only 1 required file at the top of each page to provide initialization settings and access to commonly used features.  
@@ -21,8 +21,7 @@ define('ROOT_DIR',  dirname(__DIR__));
 define('VENDOR_DIR', ROOT_DIR . '/vendor');
 require VENDOR_DIR . '/autoload.php';
 
-$pageflow = Pageflow::getInstance();
-$pageflow->init(ROOT_DIR);
+$pageflow = Pageflow(ROOT_DIR);
 ```
 Or create an init.php file with the code above and require it at the top of your php file(s).  
 
@@ -78,4 +77,4 @@ $pgConn = $pageflow->getPgConn();
 ```
 
 ## Session
-Set the SESSION_TTL_MINUTES in .env to start a secure PHP session.  
+Set the SESSION_TTL_MINUTES var in .env to start a secure PHP session.  
