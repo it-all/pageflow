@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Pageflow\Infrastructure\PostgreSQL\Query;
@@ -22,8 +23,10 @@ class QueryBuilder
     {
         $this->pgConn = $pgConn;
         $args = func_get_args();
+
         if (count($args) > 1) {
-            call_user_func_array(array($this, 'add'), array_shift($args));
+            array_shift($args); // remove pgConn
+            call_user_func_array(array($this, 'add'), $args);
         }
     }
 
@@ -33,11 +36,13 @@ class QueryBuilder
      * @param array|null $params
      * @return $this
      */
-    public function add(string $sql, ?array $params = null)
+    public function add(string $sql)
     {
         $this->sql .= $sql;
-        if ($params != null) {
-            $this->params = array_merge($this->params, $params);
+        $args = func_get_args();
+        array_shift($args); // remove sql
+        if ($args != null) {
+            $this->params = array_merge($this->params, $args);
         }
         return $this;
     }
@@ -85,7 +90,7 @@ class QueryBuilder
         if ($alterBooleanArgs) {
             $this->alterBooleanArgs();
         }
-        
+
         /** query failures within transactions without suppressing errors for pg_query_params caused two errors, only 1 of which was inserted to the database log */
         if (!$result = pg_query_params($this->pgConn, $this->sql, $this->params)) {
             /** note pg_last_error seems to often not return anything, but pg_query_params call will result in php warning */
@@ -96,11 +101,12 @@ class QueryBuilder
 
             throw new QueryFailureException($msg, E_ERROR);
         }
-        
-        $this->resetQuery(); /** prevent accidental multiple execution */
+
+        $this->resetQuery();
+        /** prevent accidental multiple execution */
         return $result;
     }
-    
+
     public function executeGetArray(bool $alterBooleanArgs = false): ?array
     {
         $pgResult = $this->execute($alterBooleanArgs);
@@ -110,7 +116,28 @@ class QueryBuilder
         pg_free_result($pgResult);
         return $results;
     }
-    
+
+    public function executeGetArrayOneField(string $fieldName, bool $alterBooleanArgs = false): ?array
+    {
+        if (null === $resultsArray = $this->executeGetArray($alterBooleanArgs)) {
+            return null;
+        }
+        $results = [];
+        foreach ($resultsArray as $resultRow) {
+            $results[] = $resultRow[$fieldName];
+        }
+        return $results;
+    }
+
+    public function executeGetArrayOneRow(bool $alterBooleanArgs = false): ?array
+    {
+        if (null === $resultsArray = $this->executeGetArray($alterBooleanArgs)) {
+            return null;
+        }
+        return $resultsArray[0];
+    }
+
+
     /**
      * In order to receive a column value back for INSERT, UPDATE, and DELETE queries
      * Note that RETURNING can include multiple fields or expressions in SQL, but this method only accepts one field. To receive multiple, simply call execute() instead and process the returned result similar to below
@@ -122,7 +149,7 @@ class QueryBuilder
 
         /** note, if query fails exception thrown in execute */
         $result = $this->execute($alterBooleanArgs);
-        
+
         if (pg_num_rows($result) > 0) {
             $returned = pg_fetch_all($result);
             if (!isset($returned[0][$returnField])) {
@@ -191,7 +218,7 @@ class QueryBuilder
         }
     }
 
-    public function recordExists(): bool 
+    public function recordExists(): bool
     {
         return null !== $this->getRow();
     }
@@ -199,6 +226,20 @@ class QueryBuilder
     public static function validateWhereOperator(string $op): bool
     {
         return in_array(strtoupper($op), self::OPERATORS);
+    }
+
+    public static function getWhereOperatorsText(): string
+    {
+        $ops = "";
+        $opCount = 1;
+        foreach (self::OPERATORS as $op) {
+            $ops .= "$op";
+            if ($opCount < count(self::OPERATORS)) {
+                $ops .= ", ";
+            }
+            $opCount++;
+        }
+        return $ops;
     }
 
     public function getSql(): ?string
