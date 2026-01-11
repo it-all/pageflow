@@ -18,7 +18,7 @@ class InsertBuilder extends InsertUpdateBuilder
     */
     public function addColumn(string $name, $value)
     {
-        $this->args[] = $value;
+        $this->params[] = $value;
         if (mb_strlen($this->columns) > 0) {
             $this->columns .= ", ";
         }
@@ -26,7 +26,7 @@ class InsertBuilder extends InsertUpdateBuilder
         if (mb_strlen($this->values) > 0) {
             $this->values .= ", ";
         }
-        $argNum = count($this->args);
+        $argNum = count($this->params);
         $this->values .= "$".$argNum;
     }
 

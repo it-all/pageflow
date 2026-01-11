@@ -23,11 +23,11 @@ class UpdateBuilder extends InsertUpdateBuilder
      */
     public function addColumn(string $name, $value)
     {
-        $this->args[] = $value;
-        if (count($this->args) > 1) {
+        $this->params[] = $value;
+        if (count($this->params) > 1) {
             $this->setColumnsValues .= ", ";
         }
-        $argNum = count($this->args);
+        $argNum = count($this->params);
         $this->setColumnsValues .= "$name = \$".$argNum;
     }
 
@@ -46,8 +46,8 @@ class UpdateBuilder extends InsertUpdateBuilder
      */
     public function setSql()
     {
-        $this->args[] = $this->updateOnColumnValue;
-        $lastArgNum = count($this->args);
+        $this->params[] = $this->updateOnColumnValue;
+        $lastArgNum = count($this->params);
         $this->sql = "UPDATE $this->dbTable SET $this->setColumnsValues WHERE $this->updateOnColumnName = $".$lastArgNum;
     }
 }

@@ -12,24 +12,33 @@ class QueryBuilder
 {
     protected $pgConn;
     protected $sql;
-    protected $args = array();
+    protected $params = array();
     const OPERATORS = ['=', '!=', '<', '>', '<=', '>=', 'IS', 'IS NOT', 'LIKE', 'ILIKE'];
 
+    /**
+     * QueryBuilder constructor. like add, for convenience
+     */
     public function __construct($pgConn)
     {
         $this->pgConn = $pgConn;
+        $args = func_get_args();
+        if (count($args) > 1) {
+            call_user_func_array(array($this, 'add'), array_shift($args));
+        }
     }
 
     /**
      * appends sql and args to query
      * @param string $sql
-     * @param array|null $args
+     * @param array|null $params
      * @return $this
      */
-    public function add(string $sql, ?array $args)
+    public function add(string $sql, ?array $params = null)
     {
         $this->sql .= $sql;
-        $this->args = array_merge($this->args, $args);
+        if ($params != null) {
+            $this->params = array_merge($this->params, $params);
+        }
         return $this;
     }
 
@@ -39,14 +48,14 @@ class QueryBuilder
      * @param $arg
      * @return $this
      */
-    public function nullExpression(string $name, $arg)
+    public function nullExpression(string $name, $param)
     {
-        if ($arg === null) {
+        if ($param === null) {
             $this->sql .= "$name IS null";
         } else {
-            $this->args[] = $arg;
-            $argNum = count($this->args);
-            $this->sql .= "$name = \$$argNum";
+            $this->params[] = $param;
+            $paramNum = count($this->params);
+            $this->sql .= "$name = \$$paramNum";
         }
         return $this;
     }
@@ -56,17 +65,17 @@ class QueryBuilder
      * @param string sql
      * @param $args
      */
-    public function set(string $sql, array $args)
+    public function set(string $sql, array $params)
     {
         $this->sql = $sql;
-        $this->args = $args;
+        $this->params = $params;
     }
 
     private function alterBooleanArgs()
     {
-        foreach ($this->args as $argIndex => $arg) {
+        foreach ($this->params as $argIndex => $arg) {
             if (is_bool($arg)) {
-                $this->args[$argIndex] = self::convertBoolToPostgresBool($arg);
+                $this->params[$argIndex] = self::convertBoolToPostgresBool($arg);
             }
         }
     }
@@ -78,11 +87,11 @@ class QueryBuilder
         }
         
         /** query failures within transactions without suppressing errors for pg_query_params caused two errors, only 1 of which was inserted to the database log */
-        if (!$result = pg_query_params($this->pgConn, $this->sql, $this->args)) {
+        if (!$result = pg_query_params($this->pgConn, $this->sql, $this->params)) {
             /** note pg_last_error seems to often not return anything, but pg_query_params call will result in php warning */
             $msg = pg_last_error($this->pgConn) . " " . $this->sql;
-            if (count($this->args) > 0) {
-                $msg .= PHP_EOL . " Args: " . var_export($this->args, true);
+            if (count($this->params) > 0) {
+                $msg .= PHP_EOL . " Args: " . var_export($this->params, true);
             }
 
             throw new QueryFailureException($msg, E_ERROR);
@@ -203,13 +212,18 @@ class QueryBuilder
 
     public function getArgs(): array
     {
-        return $this->args;
+        return $this->getParams();
+    }
+
+    public function getParams(): array
+    {
+        return $this->params;
     }
 
     public function resetQuery()
     {
         $this->sql = '';
-        $this->args = [];
+        $this->params = [];
     }
 
     public static function convertPostgresBoolToBool(string $pgBool): bool
