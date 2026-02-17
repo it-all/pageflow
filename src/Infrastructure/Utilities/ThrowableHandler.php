@@ -417,11 +417,6 @@ class ThrowableHandler
         $file = $e->getFile();
         $line = $e->getLine();
         while (true) {
-            $current = "$file:$line";
-            if (is_array($seen) && in_array($current, $seen)) {
-                $result[] = sprintf(' ... %d more', count($trace)+1);
-                break;
-            }
             $result[] = sprintf(' at %s%s%s(%s%s%s)',
                                         count($trace) && array_key_exists('class', $trace[0]) ? str_replace('\\', '.', $trace[0]['class']) : '',
                                         count($trace) && array_key_exists('class', $trace[0]) && array_key_exists('function', $trace[0]) ? '.' : '',
