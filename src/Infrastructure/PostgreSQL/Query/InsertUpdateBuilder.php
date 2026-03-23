@@ -9,9 +9,10 @@ abstract class InsertUpdateBuilder extends QueryBuilder
 
     protected $primaryKeyName;
 
-    function __construct(string $dbTable)
+    function __construct($pgConn, string $dbTable)
     {
         $this->dbTable = $dbTable;
+        parent::__construct($pgConn);
     }
 
     abstract public function addColumn(string $name, $value);
