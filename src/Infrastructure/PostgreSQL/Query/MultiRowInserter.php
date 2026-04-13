@@ -94,14 +94,14 @@ class MultiRowInserter
         return $allRowExprs;
     }
 
-    public function execute() 
+    public function execute($pgConn) 
     {
         if ($this->countRows == 0) {
             return;
         }
 
         $finalSql = $this->baseSql . ' ' . $this->getAllRowExprs();
-        $q = new QueryBuilder();
+        $q = new QueryBuilder($pgConn);
         $q->set($finalSql, $this->args);
         $q->execute();
 

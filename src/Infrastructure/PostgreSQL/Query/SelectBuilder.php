@@ -15,10 +15,10 @@ class SelectBuilder extends QueryBuilder
      * $whereExtraClause without WHERE or AND but with any ()
      * $whereExtraClause cannot use parameters
      */
-    public function __construct(string $selectClause, string $fromClause, ?array $whereColumnsInfo = null, ?string $orderBy = null, ?int $limit = null, ?string $whereExtraClause = null)
+    public function __construct($pgConn, string $selectClause, string $fromClause, ?array $whereColumnsInfo = null, ?string $orderBy = null, ?int $limit = null, ?string $whereExtraClause = null)
     {
         $this->whereStarted = false;
-        parent::__construct("$selectClause $fromClause");
+        parent::__construct($pgConn, "$selectClause $fromClause");
         if ($whereColumnsInfo != null) {
             $this->argCounter = 1;
             $this->addWhereClause($whereColumnsInfo);
