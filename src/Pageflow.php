@@ -77,7 +77,7 @@ class Pageflow
             'PDO_CONNECTION_STRING',
             'SESSION_SAVE_PATH'
         ])->notEmpty();
-        $dotenv->ifPreset(['PHPMAILER_PROTOCOL'])->allowedValues(self::ALLOWED_PHPMAILER_PROTOCOL_VALUES);
+        $dotenv->ifPresent(['PHPMAILER_PROTOCOL'])->allowedValues(self::ALLOWED_PHPMAILER_PROTOCOL_VALUES);
 
         $this->convertDotEnvBoolValues(self::DOTENV_BOOLS);
 
