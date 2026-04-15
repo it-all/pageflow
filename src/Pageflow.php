@@ -77,15 +77,25 @@ class Pageflow
             'PDO_CONNECTION_STRING',
             'SESSION_SAVE_PATH'
         ])->notEmpty();
+        $dotenv->ifPreset(['PHPMAILER_PROTOCOL'])->allowedValues(self::ALLOWED_PHPMAILER_PROTOCOL_VALUES);
 
         $this->convertDotEnvBoolValues(self::DOTENV_BOOLS);
 
         if ($_ENV['IS_EMAIL_ERRORS']) {
+            $dotenv->required(['PHPMAILER_PROTOCOL']);
             $dotenv->required(['ERROR_EMAIL_LOG_PATH', 'WEBMASTER_EMAIL'])->notEmpty();
-            $dotenv->required(['PHPMAILER_PROTOCOL'])->allowedValues(self::ALLOWED_PHPMAILER_PROTOCOL_VALUES);
+            $errorEmailLogPath = $_ENV['ERROR_EMAIL_LOG_PATH'];
+        } else {
+            $errorEmailLogPath = null;
+        }
+
+        $webmasterEmail = $_ENV['WEBMASTER_EMAIL'] ?? null;
+
+        if (isset($_ENV['PHPMAILER_PROTOCOL'])) {
             if ($_ENV['PHPMAILER_PROTOCOL'] === 'smtp') {
-                $dotenv->required(['PHPMAILER_SMTP_HOST', 
-                    'PHPMAILER_SMTP_USERNAME', 
+                $dotenv->required([
+                    'PHPMAILER_SMTP_HOST',
+                    'PHPMAILER_SMTP_USERNAME',
                     'PHPMAILER_SMTP_PASSWORD'
                 ])->notEmpty();
                 $dotenv->required('PHPMAILER_SMTP_PORT')->isInteger();
@@ -99,8 +109,6 @@ class Pageflow
                 $smtpUsername = null;
                 $smtpPassword = null;
             }
-            $errorEmailLogPath = $_ENV['ERROR_EMAIL_LOG_PATH'];
-            $webmasterEmail = $_ENV['WEBMASTER_EMAIL'];
             $emailer = new PHPMailerService(
                 $webmasterEmail,
                 $webmasterEmail,
@@ -114,11 +122,9 @@ class Pageflow
                 $webmasterEmail
             );
         } else {
-            $errorEmailLogPath = null;
-            $webmasterEmail = null;
             $emailer = null;
         }
-
+    
         $this->dotEnv = $dotenv;
         $this->emailer = $emailer;
 
