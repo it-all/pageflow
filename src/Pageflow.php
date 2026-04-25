@@ -110,8 +110,8 @@ class Pageflow
                 $smtpPassword = null;
             }
             $emailer = new PHPMailerService(
-                $webmasterEmail,
-                $webmasterEmail,
+                $_ENV['DEFAULT_FROM_EMAIL'],
+                $_ENV['DEFAULT_FROM_EMAIL'],
                 'website',
                 self::EMAIL_FAIL_MESSAGE_START,
                 $_ENV['PHPMAILER_PROTOCOL'],
