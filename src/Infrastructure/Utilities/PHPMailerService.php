@@ -23,12 +23,17 @@ class PHPMailerService
     private $phpMailer;
     private $errorInfo;
     private $webmasterEmail;
+    private $unsubscribeSecret;
+    private $unsubscribeUrlBase;
 
     /**
      * if $webmasterEmail is null, will not send email on dev servers
      * otherwise, will send only to webmaster for testing
+     *
+     * $unsubscribeSecret + $unsubscribeUrlBase enable the optional
+     * List-Unsubscribe header on send() (see $includeListUnsubscribeHeader).
      */
-    public function __construct(string $defaultReturnPathEmail, string $defaultFromEmail, string $defaultFromName, string $failMessageStart, ?string $protocol = 'smtp', ?string $smtpHost = null, ?int $smtpPort = null, ?string $smtpUsername = null, ?string $smtpPassword = null, ?string $webmasterEmail = null)
+    public function __construct(string $defaultReturnPathEmail, string $defaultFromEmail, string $defaultFromName, string $failMessageStart, ?string $protocol = 'smtp', ?string $smtpHost = null, ?int $smtpPort = null, ?string $smtpUsername = null, ?string $smtpPassword = null, ?string $webmasterEmail = null, ?string $unsubscribeSecret = null, ?string $unsubscribeUrlBase = null)
     {
         $this->defaultReturnPathEmail = $defaultReturnPathEmail;
         $this->defaultFromEmail = $defaultFromEmail;
@@ -40,6 +45,8 @@ class PHPMailerService
         $this->smtpUsername = $smtpUsername;
         $this->smtpPassword = $smtpPassword;
         $this->webmasterEmail = $webmasterEmail;
+        $this->unsubscribeSecret = $unsubscribeSecret;
+        $this->unsubscribeUrlBase = $unsubscribeUrlBase;
         $this->phpMailer = $this->create();
     }
 
@@ -52,12 +59,30 @@ class PHPMailerService
      * calls the PHPMailer send function
      * email addresses should be validated before calling
      */
-    public function send(string $subject, string $body, array $toEmails, ?string $fromEmail = null, ?string $fromName = null, ?bool $isHtml = false, ?string $altBody = null, ?array $cc = null, ?array $bcc = null, ?string $replyToEmail = null, ?string $replyToName = null, ?string $returnPathEmailOverride = null): bool
+    public function send(string $subject, string $body, array $toEmails, ?string $fromEmail = null, ?string $fromName = null, ?bool $isHtml = false, ?string $altBody = null, ?array $cc = null, ?array $bcc = null, ?string $replyToEmail = null, ?string $replyToName = null, ?string $returnPathEmailOverride = null, bool $includeListUnsubscribeHeader = false): bool
     {
         if (count($toEmails) == 0) {
             throw new \Exception("No email(s) provided");
         }
         $toEmails = array_unique($toEmails);
+
+        /**
+         * RFC 8058 List-Unsubscribe + one-click. Adds two headers when enabled
+         * and both secret + url-base were supplied at construction. HMAC keys
+         * the token to the recipient so each unsubscribe URL is single-use.
+         */
+        if ($includeListUnsubscribeHeader && $this->unsubscribeSecret !== null && $this->unsubscribeSecret !== '' && $this->unsubscribeUrlBase !== null && $this->unsubscribeUrlBase !== '') {
+            $primary = (string) reset($toEmails);
+            if ($primary !== '') {
+                $token = hash_hmac('sha256', $primary, $this->unsubscribeSecret);
+                $unsubUrl = rtrim($this->unsubscribeUrlBase, '/')
+                    . '?e=' . rawurlencode($primary)
+                    . '&t=' . rawurlencode($token);
+                $unsubMailto = 'mailto:' . ($this->webmasterEmail ?? $this->defaultReturnPathEmail) . '?subject=unsubscribe';
+                $this->phpMailer->addCustomHeader('List-Unsubscribe', '<' . $unsubMailto . '>, <' . $unsubUrl . '>');
+                $this->phpMailer->addCustomHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+            }
+        }
         $this->phpMailer->Sender = $returnPathEmailOverride ?? $this->defaultReturnPathEmail; /** The Sender email (Return-Path) of the message. */
         $this->phpMailer->Subject = $subject;
         $this->phpMailer->Body = $body;
@@ -105,13 +130,17 @@ class PHPMailerService
         }
         if (!$this->phpMailer->send()) {
             $this->errorInfo = $this->phpMailer->ErrorInfo;
-            $this->clear();
             $errorMessage = $this->failMessageStart . ": " . $this->errorInfo . PHP_EOL .
                 "subject: $subject" . PHP_EOL .
                 "body: $body" . PHP_EOL .
                 "to: $toEmailsString" . PHP_EOL .
                 "from: $fromEmail";
-            throw new Exception("$errorMessage");
+            // Log and return false rather than throwing — callers (transactional
+            // sends, error notifications) are best-effort and should not crash
+            // the request when SMTP misbehaves.
+            ThrowableHandler::logError($errorMessage);
+            $this->clear();
+            return false;
         }
         $this->clear();
         return true;

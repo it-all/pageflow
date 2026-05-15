@@ -49,6 +49,13 @@ class Pageflow
     private $pdo;
     private $auth;
 
+    /**
+     * Singleton handle so Domain classes that don't have $pageflow in scope
+     * (Order, Contacts, News, etc.) can still reach the shared emailer via
+     * Pageflow::getInstance()->getEmailer().
+     */
+    private static ?self $instance = null;
+
     public function __construct(?string $rootDir = null)
     {
         $this->rootDir = $rootDir ?? __DIR__ . '/../../../../';
@@ -77,24 +84,22 @@ class Pageflow
             'PDO_CONNECTION_STRING',
             'SESSION_SAVE_PATH'
         ])->notEmpty();
-        $dotenv->ifPresent(['PHPMAILER_PROTOCOL'])->allowedValues(self::ALLOWED_PHPMAILER_PROTOCOL_VALUES);
 
         $this->convertDotEnvBoolValues(self::DOTENV_BOOLS);
 
-        if ($_ENV['IS_EMAIL_ERRORS']) {
-            $dotenv->required(['PHPMAILER_PROTOCOL']);
-            $dotenv->required(['ERROR_EMAIL_LOG_PATH', 'WEBMASTER_EMAIL'])->notEmpty();
-            $errorEmailLogPath = $_ENV['ERROR_EMAIL_LOG_PATH'];
-        } else {
-            $errorEmailLogPath = null;
-        }
-
+        // Build the shared emailer whenever WEBMASTER_EMAIL is set, regardless
+        // of IS_EMAIL_ERRORS. The IS_EMAIL_ERRORS env flag gates only whether
+        // ThrowableHandler emails on uncaught errors (see below) — it should
+        // NOT block transactional sends (order receipts, confirmation emails,
+        // newsletter signups, etc.). Decoupling lets dev environments leave
+        // IS_EMAIL_ERRORS=0 (no error-spam) while still using the emailer for
+        // application flows.
         $webmasterEmail = $_ENV['WEBMASTER_EMAIL'] ?? null;
-
-        if (isset($_ENV['PHPMAILER_PROTOCOL'])) {
+        $errorEmailLogPath = $_ENV['ERROR_EMAIL_LOG_PATH'] ?? null;
+        if ($webmasterEmail !== null && $webmasterEmail !== '') {
+            $dotenv->required(['PHPMAILER_PROTOCOL'])->allowedValues(self::ALLOWED_PHPMAILER_PROTOCOL_VALUES);
             if ($_ENV['PHPMAILER_PROTOCOL'] === 'smtp') {
-                $dotenv->required([
-                    'PHPMAILER_SMTP_HOST',
+                $dotenv->required(['PHPMAILER_SMTP_HOST',
                     'PHPMAILER_SMTP_USERNAME',
                     'PHPMAILER_SMTP_PASSWORD'
                 ])->notEmpty();
@@ -110,8 +115,8 @@ class Pageflow
                 $smtpPassword = null;
             }
             $emailer = new PHPMailerService(
-                $_ENV['DEFAULT_FROM_EMAIL'],
-                $_ENV['DEFAULT_FROM_EMAIL'],
+                $webmasterEmail,
+                $webmasterEmail,
                 'website',
                 self::EMAIL_FAIL_MESSAGE_START,
                 $_ENV['PHPMAILER_PROTOCOL'],
@@ -119,12 +124,14 @@ class Pageflow
                 $smtpPort,
                 $smtpUsername,
                 $smtpPassword,
-                $webmasterEmail
+                $webmasterEmail,
+                $_ENV['UNSUBSCRIBE_SECRET'] ?? null,
+                $_ENV['UNSUBSCRIBE_URL_BASE'] ?? null
             );
         } else {
             $emailer = null;
         }
-    
+
         $this->dotEnv = $dotenv;
         $this->emailer = $emailer;
 
@@ -156,7 +163,14 @@ class Pageflow
         /** do not redirect to error page on test servers */
         $fatalRedirectPage = ($_ENV['IS_LIVE'] && isset($_ENV['ERROR_PAGE'])) ? $_ENV['ERROR_PAGE'] : null;
 
-        $throwableHandler = new ThrowableHandler($this->rootDir, $_ENV['PHP_ERROR_LOG_PATH'], $maxErrorLogCharacters, $echoErrorsInBrowser, $fatalRedirectPage, $fatalErrorHtml, $emailer, $webmasterEmail, self::EMAIL_FAIL_MESSAGE_START, $errorEmailLogPath);
+        // IS_EMAIL_ERRORS still gates ThrowableHandler's error-emails. When
+        // false, hand the handler a null emailer + null webmaster so it logs
+        // but never sends — even though the shared emailer is otherwise
+        // available for transactional sends.
+        $errorEmailerForHandler   = $_ENV['IS_EMAIL_ERRORS'] ? $emailer : null;
+        $errorWebmasterForHandler = $_ENV['IS_EMAIL_ERRORS'] ? $webmasterEmail : null;
+        $errorLogPathForHandler   = $_ENV['IS_EMAIL_ERRORS'] ? $errorEmailLogPath : null;
+        $throwableHandler = new ThrowableHandler($this->rootDir, $_ENV['PHP_ERROR_LOG_PATH'], $maxErrorLogCharacters, $echoErrorsInBrowser, $fatalRedirectPage, $fatalErrorHtml, $errorEmailerForHandler, $errorWebmasterForHandler, self::EMAIL_FAIL_MESSAGE_START, $errorLogPathForHandler);
 
         set_error_handler(array($throwableHandler, 'onError'));
         set_exception_handler(array($throwableHandler, 'onException'));
@@ -242,6 +256,13 @@ class Pageflow
             $this->pdo = null;
             $this->auth = null;
         }
+
+        self::$instance = $this;
+    }
+
+    public static function getInstance(): ?self
+    {
+        return self::$instance;
     }
 
     /**
